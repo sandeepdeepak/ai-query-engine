@@ -10,7 +10,9 @@ class IplApiConfigurationError(RuntimeError):
 
 
 class IplApiClient:
-    ALLOWED_RESOURCES = frozenset({"matches", "players", "deliveries", "innings", "seasons"})
+    ALLOWED_RESOURCES = frozenset(
+        {"matches", "players", "batting_stats", "deliveries", "innings", "seasons"}
+    )
 
     def __init__(self, base_url: str, api_key: str, timeout_seconds: float = 10.0) -> None:
         self._base_url = base_url.rstrip("/")

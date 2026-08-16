@@ -55,6 +55,7 @@ def test_generate_sql_returns_structured_stages() -> None:
 
 
 def test_top_run_scorers_are_clarified_as_player_batting_totals() -> None:
+    from app.integrations.ipl_api import IplApiClient
     from app.llm.question_clarifier import IplQuestionClarifier
 
     clarification = IplQuestionClarifier().clarify(
@@ -69,6 +70,7 @@ def test_top_run_scorers_are_clarified_as_player_batting_totals() -> None:
         clarification.interpreted_question, SchemaService().get_catalog()
     )
     assert selected[0].name == "batting_stats"
+    assert "batting_stats" in IplApiClient.ALLOWED_RESOURCES
 
 
 def test_generate_sql_rejects_short_question() -> None:
