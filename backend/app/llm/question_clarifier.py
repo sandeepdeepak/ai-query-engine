@@ -78,6 +78,17 @@ class IplQuestionClarifier:
                 "'Run scorers' means individual batters ranked by accumulated batting runs."
             )
         elif re.search(
+            r"\b(best bowling|bowling figures|most wickets in (a |one )?match)\b",
+            canonical,
+            re.I,
+        ):
+            interpreted = (
+                "Find the single best IPL bowling performance in one match, ranked by "
+                "bowler-credited wickets descending and then runs conceded ascending. "
+                "Return exactly one bowler and the match-level bowling figures."
+            )
+            interpreted = self._append_context(interpreted, canonical)
+        elif re.search(
             r"\b(top|highest|leading|most)\s+(wicket\s+)?(takers?|wickets?)\b",
             canonical,
             re.I,
@@ -89,16 +100,6 @@ class IplQuestionClarifier:
             )
             interpreted = self._append_context(interpreted, canonical)
             assumptions.append("'Wicket takers' means bowler-credited season wicket totals.")
-        elif re.search(
-            r"\b(best bowling|bowling figures|most wickets in (a |one )?match)\b",
-            canonical,
-            re.I,
-        ):
-            interpreted = (
-                "Rank single-match IPL bowling figures by wickets, then by fewer runs "
-                "conceded. Return the bowler and match-level figures."
-            )
-            interpreted = self._append_context(interpreted, canonical)
         elif re.search(
             r"\b(highest individual score|best batting score|most runs in (a |one )?match)\b",
             canonical,
@@ -194,13 +195,16 @@ class IplQuestionClarifier:
                 "ranking": "runs descending",
                 "result_limit": 1,
             }
-        if "single-match ipl bowling" in lowered:
+        if (
+            "single-match ipl bowling" in lowered
+            or "bowling performance in one match" in lowered
+        ):
             return {
                 "entity": "bowler",
                 "metric": "match bowling figures",
                 "scope": "single_match",
                 "ranking": "wickets descending, runs conceded ascending",
-                "result_limit": None,
+                "result_limit": 1,
             }
         if "head-to-head" in lowered:
             return {

@@ -148,6 +148,26 @@ def test_highest_run_defaults_to_single_match_innings_not_delivery() -> None:
     assert [table.name for table in selected] == ["player_match_batting"]
 
 
+def test_most_wickets_in_a_match_overrides_season_total_intent() -> None:
+    from app.llm.question_clarifier import IplQuestionClarifier
+
+    clarification = IplQuestionClarifier().clarify(
+        "Who took most wickets in a match in 2025"
+    )
+    selected = SchemaSelector().select(
+        clarification.interpreted_question, SchemaService().get_catalog()
+    )
+
+    assert "single best IPL bowling performance in one match" in (
+        clarification.interpreted_question
+    )
+    assert "IPL season: 2025" in clarification.interpreted_question
+    assert "season-level total" not in clarification.interpreted_question
+    assert clarification.scope == "single_match"
+    assert clarification.result_limit == 1
+    assert [table.name for table in selected] == ["player_match_bowling"]
+
+
 def test_generate_sql_rejects_short_question() -> None:
     response = TestClient(app).post("/api/v1/sql/generate", json={"question": "x"})
     assert response.status_code == 422

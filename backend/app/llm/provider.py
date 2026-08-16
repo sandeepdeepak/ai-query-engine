@@ -14,6 +14,9 @@ IPL semantic defaults:
 - "most runs", "top run scorer", "leading run scorer", and Orange Cap mean accumulated
   batter runs for a season/team/career scope, never runs on one delivery.
 - Purple Cap means the season bowler with the most bowler-credited wickets.
+- Explicit scope phrases have priority over generic metric phrases. "In a match", "in one
+  match", or "single match" with wickets means match-level bowling figures, not season totals.
+  Use wickets descending, runs conceded ascending, and one result for "most wickets".
 - A raw delivery run value is intended only when the user explicitly says ball or delivery.
 - Preserve every explicit season, team, player, venue, opponent, and result-count filter.
 - Normalize grammar and spelling without changing the user's requested scope.

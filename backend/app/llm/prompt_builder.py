@@ -59,6 +59,9 @@ Rules:
   in one match innings: use player_match_batting, ORDER BY runs DESC, and LIMIT 1. Never
   interpret it as deliveries.batting_runs unless ball or delivery is explicitly requested.
 - Use player_match_bowling for best bowling figures in one match.
+- Explicit "in a match" scope overrides season-total wicket interpretations. For most wickets
+  in a match, use player_match_bowling, order by wickets DESC then runs_conceded ASC, and
+  return LIMIT 1.
 - Use team_season_stats for team wins, losses, standings, and win percentage.
 - Use head_to_head_stats for records between two teams. Team columns are alphabetically
   canonicalized as team1_name and team2_name; filter both columns accordingly.
