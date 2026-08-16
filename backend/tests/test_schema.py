@@ -19,6 +19,7 @@ def test_schema_catalog_contains_verified_resources() -> None:
     assert payload["source"] == "ipl-public-api"
     assert {table["name"] for table in payload["tables"]} == {
         "matches",
+        "batting_stats",
         "players",
         "deliveries",
         "innings",
@@ -44,7 +45,7 @@ def test_schema_service_returns_defensive_cached_copy() -> None:
     first.tables.clear()
     second = service.get_catalog()
 
-    assert len(second.tables) == 5
+    assert len(second.tables) == 6
     assert first.generated_at == second.generated_at
 
 

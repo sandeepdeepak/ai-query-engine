@@ -4,6 +4,17 @@ from app.schema.models import RelationshipMetadata, SchemaCatalog, TableMetadata
 
 TOKEN_PATTERN = re.compile(r"[a-z0-9_]+")
 TABLE_HINTS: dict[str, set[str]] = {
+    "batting_stats": {
+        "batter",
+        "batters",
+        "batting",
+        "scorer",
+        "scorers",
+        "player-level",
+        "rank",
+        "ranked",
+        "individual",
+    },
     "matches": {
         "match",
         "matches",
@@ -45,6 +56,12 @@ TABLE_HINTS: dict[str, set[str]] = {
 class SchemaSelector:
     def select(self, question: str, catalog: SchemaCatalog, limit: int = 3) -> list[TableMetadata]:
         tokens = set(TOKEN_PATTERN.findall(question.lower()))
+        if tokens & {"scorer", "scorers", "batter", "batters"} and tokens & {
+            "run",
+            "runs",
+            "batting",
+        }:
+            return [next(table for table in catalog.tables if table.name == "batting_stats")]
         scored: list[tuple[int, TableMetadata]] = []
         for table in catalog.tables:
             searchable = {table.name}

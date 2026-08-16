@@ -14,7 +14,9 @@ class FakeSqlGenerator:
 
     async def generate(self, *, system_prompt: str, question: str) -> SqlGeneration:
         self.received_prompt = system_prompt
-        assert question == "Show matches from the 2026 season"
+        assert question == (
+            "Using IPL cricket data, answer this request: Show matches from the 2026 season"
+        )
         return SqlGeneration(
             sql="SELECT match_id FROM matches WHERE season_year = 2026 LIMIT 100",
             explanation="Lists 2026 match identifiers.",
@@ -41,6 +43,7 @@ def test_generate_sql_returns_structured_stages() -> None:
     assert payload["selected_tables"]
     assert payload["generation"]["sql"].startswith("SELECT")
     assert [stage["name"] for stage in payload["stages"]] == [
+        "question_clarification",
         "schema_selection",
         "prompt_building",
         "sql_generation",
@@ -48,6 +51,24 @@ def test_generate_sql_returns_structured_stages() -> None:
     assert "TABLE matches" in generator.received_prompt
     assert "Royal Challengers Bangaluru" in generator.received_prompt
     assert "Royal Challengers Bengaluru" in generator.received_prompt
+    assert payload["clarification"]["interpreted_question"].startswith("Using IPL")
+
+
+def test_top_run_scorers_are_clarified_as_player_batting_totals() -> None:
+    from app.llm.question_clarifier import IplQuestionClarifier
+
+    clarification = IplQuestionClarifier().clarify(
+        "Show top run scorers of Royal Challengers Bengaluru from the 2026 season"
+    )
+
+    assert "individual batting runs" in clarification.interpreted_question
+    assert "while batting for Royal Challengers Bengaluru" in clarification.interpreted_question
+    assert "not team innings totals" in clarification.interpreted_question
+
+    selected = SchemaSelector().select(
+        clarification.interpreted_question, SchemaService().get_catalog()
+    )
+    assert selected[0].name == "batting_stats"
 
 
 def test_generate_sql_rejects_short_question() -> None:

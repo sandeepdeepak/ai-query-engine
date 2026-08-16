@@ -24,7 +24,13 @@ describe("App", () => {
       provider: "mock",
       model: "test-model",
       selected_tables: ["matches"],
+      clarification: {
+        original_question: "Show matches from the 2026 season",
+        interpreted_question: "Using IPL cricket data, answer this request: Show matches from the 2026 season",
+        assumptions: [],
+      },
       stages: [
+        { name: "question_clarification", status: "success" },
         { name: "schema_selection", status: "success" },
         { name: "prompt_building", status: "success" },
         { name: "sql_generation", status: "success" },

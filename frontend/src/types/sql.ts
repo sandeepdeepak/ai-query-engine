@@ -3,8 +3,13 @@ export type GenerateSqlResponse = {
   provider: string;
   model: string;
   selected_tables: string[];
+  clarification: {
+    original_question: string;
+    interpreted_question: string;
+    assumptions: string[];
+  };
   stages: Array<{
-    name: "schema_selection" | "prompt_building" | "sql_generation";
+    name: "question_clarification" | "schema_selection" | "prompt_building" | "sql_generation";
     status: "success";
   }>;
   generation: {
@@ -20,7 +25,7 @@ export type QueryResponse = {
   question: string;
   status: "completed";
   stages: Array<{
-    name: "schema_selection" | "prompt_building" | "sql_generation" | "sql_validation" | "execution" | "result_formatting";
+    name: "question_clarification" | "schema_selection" | "prompt_building" | "sql_generation" | "sql_validation" | "execution" | "result_formatting";
     status: "success";
   }>;
   generation: GenerateSqlResponse;

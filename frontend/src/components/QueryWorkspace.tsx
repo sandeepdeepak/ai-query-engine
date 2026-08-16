@@ -5,6 +5,7 @@ import { runQuery } from "../api/sql";
 import { ResultWorkbench } from "./ResultWorkbench";
 
 const stageLabels = {
+  question_clarification: "IPL intent clarified",
   schema_selection: "Schema selected",
   prompt_building: "Prompt constructed",
   sql_generation: "SQL generated",
@@ -14,6 +15,7 @@ const stageLabels = {
 };
 
 const examples = [
+  "Show top run scorers of Royal Challengers Bengaluru from the 2026 season",
   "Show the first 10 matches from the 2026 season",
   "List players whose last IPL season was 2024",
   "Show completed matches in Chennai ordered by match date",

@@ -19,8 +19,15 @@ class SqlGeneration(BaseModel):
         return sql.rstrip(";")
 
 
+class QuestionClarification(BaseModel):
+    original_question: str
+    interpreted_question: str
+    assumptions: list[str] = Field(default_factory=list)
+
+
 class GenerationStage(BaseModel):
     name: Literal[
+        "question_clarification",
         "schema_selection",
         "prompt_building",
         "sql_generation",
@@ -42,6 +49,7 @@ class GenerateSqlRequest(BaseModel):
 
 class GenerateSqlResponse(BaseModel):
     question: str
+    clarification: QuestionClarification
     provider: str
     model: str
     selected_tables: list[str]

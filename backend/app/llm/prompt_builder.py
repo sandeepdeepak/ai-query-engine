@@ -47,6 +47,9 @@ Rules:
 - Add LIMIT 100 unless the query returns one aggregate row or already has a lower limit.
 - IPL seasons are represented by their starting year, and available data spans 2008 through 2026.
 - Do not invent names. Record unavoidable interpretation choices as assumptions.
+- Treat run scorer, leading scorer, top scorer, and top batter as player-level batting
+  statistics. Use batting_stats and its runs column; never use innings.runs for those intents.
+- innings.runs is a team innings total, not an individual batter's runs.
 
 Verified schema:
 {schema_context}

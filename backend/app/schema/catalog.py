@@ -64,6 +64,22 @@ IPL_SCHEMA_CATALOG: tuple[dict[str, Any], ...] = (
         ],
     },
     {
+        "name": "batting_stats",
+        "description": "Pre-aggregated IPL batting totals per season, team, and batter.",
+        "primary_key": ["season_year", "batting_team_id", "batter_id"],
+        "columns": [
+            ("season_year", "integer", False, "IPL season year"),
+            ("batting_team_id", "text", False, "Team identifier for which the batter played"),
+            ("batting_team_name", "text", False, "Team for which the batter scored these runs"),
+            ("batter_id", "text", False, "Batter player identifier"),
+            ("batter_name", "text", False, "Batter display name"),
+            ("runs", "integer", False, "Total individual batting runs"),
+            ("matches", "integer", False, "Matches in which the batter faced a delivery"),
+            ("fours", "integer", False, "Total fours hit"),
+            ("sixes", "integer", False, "Total sixes hit"),
+        ],
+    },
+    {
         "name": "deliveries",
         "description": "Ball-by-ball IPL delivery records, runs, wickets, and participants.",
         "primary_key": ["match_id", "innings_number", "sequence"],
