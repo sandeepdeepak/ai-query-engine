@@ -28,6 +28,11 @@ describe("App", () => {
         original_question: "Show matches from the 2026 season",
         interpreted_question: "Using IPL cricket data, answer this request: Show matches from the 2026 season",
         assumptions: [],
+        entity: "ipl_record",
+        metric: "as requested",
+        scope: "as requested",
+        ranking: "as requested",
+        result_limit: null,
       },
       stages: [
         { name: "question_clarification", status: "success" },

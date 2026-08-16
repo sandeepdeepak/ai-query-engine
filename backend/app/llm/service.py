@@ -24,6 +24,12 @@ class SqlGenerationService:
 
     async def generate(self, question: str) -> GenerateSqlResponse:
         clarification = self._clarifier.clarify(question)
+        analyze = getattr(self._generator, "clarify", None)
+        if callable(analyze):
+            clarification = await analyze(
+                question=question,
+                domain_hint=clarification.interpreted_question,
+            )
         interpreted_question = clarification.interpreted_question
         catalog = self._schema_service.get_catalog()
         tables = self._selector.select(interpreted_question, catalog)

@@ -2,7 +2,26 @@ from typing import Protocol
 
 from openai import AsyncOpenAI
 
-from app.llm.models import SqlGeneration
+from app.llm.models import QuestionClarification, SqlGeneration
+
+INTENT_ANALYSIS_PROMPT = """Analyze every user question as an IPL cricket data intent.
+Return a clear standalone interpreted question before SQL generation, plus structured intent.
+
+IPL semantic defaults:
+- "highest run" or "highest runs" without season/career/total wording means the highest
+  individual batter score in one match innings across the requested scope. Use match-level
+  batting intent, order runs descending, and return one result.
+- "most runs", "top run scorer", "leading run scorer", and Orange Cap mean accumulated
+  batter runs for a season/team/career scope, never runs on one delivery.
+- Purple Cap means the season bowler with the most bowler-credited wickets.
+- A raw delivery run value is intended only when the user explicitly says ball or delivery.
+- Preserve every explicit season, team, player, venue, opponent, and result-count filter.
+- Normalize grammar and spelling without changing the user's requested scope.
+- If scope is omitted, state the IPL-wide default explicitly.
+- result_limit is 1 for singular superlatives such as highest, best, winner, or most.
+
+Use concise values for entity, metric, scope, and ranking. Do not generate SQL.
+"""
 
 
 class SqlGenerator(Protocol):
@@ -31,6 +50,27 @@ class OpenAiSqlGenerator:
         if response.output_parsed is None:
             raise RuntimeError("The model did not return a SQL generation result")
         return response.output_parsed
+
+    async def clarify(
+        self, *, question: str, domain_hint: str
+    ) -> QuestionClarification:
+        response = await self._client.responses.parse(
+            model=self.model_name,
+            input=[
+                {"role": "system", "content": INTENT_ANALYSIS_PROMPT},
+                {
+                    "role": "user",
+                    "content": (
+                        f"Original question: {question}\n"
+                        f"Deterministic IPL guardrail: {domain_hint}"
+                    ),
+                },
+            ],
+            text_format=QuestionClarification,
+        )
+        if response.output_parsed is None:
+            raise RuntimeError("The model did not return an IPL intent analysis")
+        return response.output_parsed.model_copy(update={"original_question": question})
 
 
 class MockSqlGenerator:

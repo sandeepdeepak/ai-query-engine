@@ -23,6 +23,11 @@ class QuestionClarification(BaseModel):
     original_question: str
     interpreted_question: str
     assumptions: list[str] = Field(default_factory=list)
+    entity: str = "unspecified"
+    metric: str = "unspecified"
+    scope: str = "unspecified"
+    ranking: str = "none"
+    result_limit: int | None = None
 
 
 class GenerationStage(BaseModel):

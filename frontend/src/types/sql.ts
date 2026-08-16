@@ -7,6 +7,11 @@ export type GenerateSqlResponse = {
     original_question: string;
     interpreted_question: string;
     assumptions: string[];
+    entity: string;
+    metric: string;
+    scope: string;
+    ranking: string;
+    result_limit: number | null;
   };
   stages: Array<{
     name: "question_clarification" | "schema_selection" | "prompt_building" | "sql_generation";

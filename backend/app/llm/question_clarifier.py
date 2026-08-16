@@ -22,7 +22,21 @@ class IplQuestionClarifier:
                 canonical = replaced
                 assumptions.append(f"Normalized '{alias}' to '{team}'.")
 
-        if re.search(r"\bpurple\s+cap\b", canonical, re.I):
+        if re.search(
+            r"\bhighest\s+(individual\s+)?runs?\b",
+            canonical,
+            re.I,
+        ) and not re.search(r"\b(total|season|career|aggregate|accumulated)\b", canonical, re.I):
+            interpreted = (
+                "Find the single highest individual batter score in one IPL match innings "
+                "across all available IPL seasons. Return exactly one batter and the "
+                "match-level batting figures, ordered by runs descending."
+            )
+            assumptions.append(
+                "Without season or career wording, 'highest run' means the highest "
+                "individual score in one match innings, not runs from one delivery."
+            )
+        elif re.search(r"\bpurple\s+cap\b", canonical, re.I):
             season = self._season(canonical)
             interpreted = (
                 "Find the IPL Purple Cap winner: the single bowler with the highest "
@@ -121,10 +135,12 @@ class IplQuestionClarifier:
         else:
             interpreted = f"Using IPL cricket data, answer this request: {canonical}"
 
+        intent = self._infer_intent(interpreted)
         return QuestionClarification(
             original_question=normalized,
             interpreted_question=interpreted,
             assumptions=assumptions,
+            **intent,
         )
 
     @staticmethod
@@ -150,3 +166,54 @@ class IplQuestionClarifier:
         if season:
             interpreted += f" IPL season: {season}."
         return interpreted
+
+    @staticmethod
+    def _infer_intent(interpreted: str) -> dict[str, str | int | None]:
+        lowered = interpreted.lower()
+        if "single highest individual batter score" in lowered:
+            return {
+                "entity": "batter",
+                "metric": "match innings runs",
+                "scope": "single_match_all_time",
+                "ranking": "runs descending",
+                "result_limit": 1,
+            }
+        if "purple cap" in lowered:
+            return {
+                "entity": "bowler",
+                "metric": "season wickets",
+                "scope": "season",
+                "ranking": "wickets descending, economy ascending",
+                "result_limit": 1,
+            }
+        if "orange cap" in lowered:
+            return {
+                "entity": "batter",
+                "metric": "season runs",
+                "scope": "season",
+                "ranking": "runs descending",
+                "result_limit": 1,
+            }
+        if "single-match ipl bowling" in lowered:
+            return {
+                "entity": "bowler",
+                "metric": "match bowling figures",
+                "scope": "single_match",
+                "ranking": "wickets descending, runs conceded ascending",
+                "result_limit": None,
+            }
+        if "head-to-head" in lowered:
+            return {
+                "entity": "team_pair",
+                "metric": "head-to-head results",
+                "scope": "requested_seasons",
+                "ranking": "none",
+                "result_limit": None,
+            }
+        return {
+            "entity": "ipl_record",
+            "metric": "as requested",
+            "scope": "as requested",
+            "ranking": "as requested",
+            "result_limit": None,
+        }

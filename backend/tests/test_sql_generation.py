@@ -129,6 +129,25 @@ def test_ipl_cap_terms_are_reframed_before_schema_selection(
     assert [table.name for table in selected] == [expected_table]
 
 
+def test_highest_run_defaults_to_single_match_innings_not_delivery() -> None:
+    from app.llm.question_clarifier import IplQuestionClarifier
+
+    clarification = IplQuestionClarifier().clarify("Who scored highest run in IPL")
+    selected = SchemaSelector().select(
+        clarification.interpreted_question, SchemaService().get_catalog()
+    )
+
+    assert "highest individual batter score in one IPL match innings" in (
+        clarification.interpreted_question
+    )
+    assert "not runs from one delivery" in clarification.assumptions[0]
+    assert clarification.entity == "batter"
+    assert clarification.metric == "match innings runs"
+    assert clarification.scope == "single_match_all_time"
+    assert clarification.result_limit == 1
+    assert [table.name for table in selected] == ["player_match_batting"]
+
+
 def test_generate_sql_rejects_short_question() -> None:
     response = TestClient(app).post("/api/v1/sql/generate", json={"question": "x"})
     assert response.status_code == 422

@@ -62,6 +62,12 @@ export function ResultWorkbench({ result }: { result: QueryResponse }) {
             <div className="wide-detail">
               <h3>Interpreted IPL question</h3>
               <p>{result.generation.clarification.interpreted_question}</p>
+              <div className="schema-tags">
+                <code>entity: {result.generation.clarification.entity}</code>
+                <code>metric: {result.generation.clarification.metric}</code>
+                <code>scope: {result.generation.clarification.scope}</code>
+                <code>ranking: {result.generation.clarification.ranking}</code>
+              </div>
             </div>
             <div className="wide-detail">
               <h3>Explanation</h3>

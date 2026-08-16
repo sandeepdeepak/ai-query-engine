@@ -55,6 +55,9 @@ Rules:
   descending and return LIMIT 1. Orange Cap means the single season run leader from
   batting_stats; order by runs descending and return LIMIT 1.
 - Use player_match_batting for highest individual scores and match-level batting figures.
+- "Highest run(s)" without season/career/total wording means the highest individual score
+  in one match innings: use player_match_batting, ORDER BY runs DESC, and LIMIT 1. Never
+  interpret it as deliveries.batting_runs unless ball or delivery is explicitly requested.
 - Use player_match_bowling for best bowling figures in one match.
 - Use team_season_stats for team wins, losses, standings, and win percentage.
 - Use head_to_head_stats for records between two teams. Team columns are alphabetically
