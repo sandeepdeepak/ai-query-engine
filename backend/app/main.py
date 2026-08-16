@@ -16,6 +16,14 @@ from app.db.session import close_database
 settings = get_settings()
 
 
+def cors_origins() -> list[str]:
+    configured = str(settings.frontend_origin).rstrip("/")
+    origins = {configured}
+    if settings.app_env == "development":
+        origins.update({"http://localhost:5173", "http://127.0.0.1:5173"})
+    return sorted(origins)
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     yield
@@ -30,7 +38,7 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[str(settings.frontend_origin).rstrip("/")],
+    allow_origins=cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

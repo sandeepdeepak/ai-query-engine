@@ -65,3 +65,19 @@ def test_query_endpoint_runs_generation_validation_and_execution() -> None:
         "result_formatting",
     ]
     assert client.received_plan.limit == 10
+
+
+def test_development_cors_accepts_both_loopback_frontend_origins() -> None:
+    client = TestClient(app)
+    for origin in ("http://localhost:5173", "http://127.0.0.1:5173"):
+        response = client.options(
+            "/api/v1/query",
+            headers={
+                "Origin": origin,
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "content-type",
+            },
+        )
+
+        assert response.status_code == 200
+        assert response.headers["access-control-allow-origin"] == origin
