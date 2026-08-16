@@ -36,6 +36,61 @@ class IplQuestionClarifier:
             assumptions.append(
                 "'Run scorers' means individual batters ranked by accumulated batting runs."
             )
+        elif re.search(
+            r"\b(top|highest|leading|most)\s+(wicket\s+)?(takers?|wickets?)\b",
+            canonical,
+            re.I,
+        ):
+            interpreted = (
+                "Rank IPL bowlers by season-level total wickets credited to the bowler, "
+                "highest wickets first. Do not count run-outs or retired dismissals as "
+                "bowler wickets."
+            )
+            interpreted = self._append_context(interpreted, canonical)
+            assumptions.append("'Wicket takers' means bowler-credited season wicket totals.")
+        elif re.search(
+            r"\b(best bowling|bowling figures|most wickets in (a |one )?match)\b",
+            canonical,
+            re.I,
+        ):
+            interpreted = (
+                "Rank single-match IPL bowling figures by wickets, then by fewer runs "
+                "conceded. Return the bowler and match-level figures."
+            )
+            interpreted = self._append_context(interpreted, canonical)
+        elif re.search(
+            r"\b(highest individual score|best batting score|most runs in (a |one )?match)\b",
+            canonical,
+            re.I,
+        ):
+            interpreted = (
+                "Rank single-match IPL batter innings by individual runs, highest first. "
+                "Return batter and match-level batting figures."
+            )
+            interpreted = self._append_context(interpreted, canonical)
+        elif re.search(r"\b(head[ -]to[ -]head|h2h)\b", canonical, re.I):
+            interpreted = (
+                "Return the IPL head-to-head record for the requested team pair, including "
+                "meetings and wins for each team. " + canonical
+            )
+        elif re.search(
+            r"\b(win percentage|most wins|team record|team performance|standings)\b",
+            canonical,
+            re.I,
+        ):
+            interpreted = (
+                "Return the IPL team season summary with matches, wins, losses, ties, "
+                "no-results, and win percentage. " + canonical
+            )
+        elif re.search(
+            r"\b(venue stats|average (first innings )?score|chasing wins|batting first wins)\b",
+            canonical,
+            re.I,
+        ):
+            interpreted = (
+                "Return venue-level IPL season statistics for scoring and match outcomes. "
+                + canonical
+            )
         else:
             interpreted = f"Using IPL cricket data, answer this request: {canonical}"
 
@@ -58,3 +113,13 @@ class IplQuestionClarifier:
             re.IGNORECASE,
         )
         return match.group(1).strip() if match else None
+
+    @classmethod
+    def _append_context(cls, interpreted: str, question: str) -> str:
+        team = cls._team_after_of(question)
+        season = cls._season(question)
+        if team:
+            interpreted += f" Team: {team}."
+        if season:
+            interpreted += f" IPL season: {season}."
+        return interpreted

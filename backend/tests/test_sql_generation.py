@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from app.api.routes.sql import get_configured_sql_generator
@@ -71,6 +72,30 @@ def test_top_run_scorers_are_clarified_as_player_batting_totals() -> None:
     )
     assert selected[0].name == "batting_stats"
     assert "batting_stats" in IplApiClient.ALLOWED_RESOURCES
+
+
+@pytest.mark.parametrize(
+    ("question", "expected_table"),
+    [
+        ("Show top wicket takers of RCB from the 2026 season", "bowling_stats"),
+        ("Show best bowling figures in one match in 2026", "player_match_bowling"),
+        ("Show highest individual score in one match in 2026", "player_match_batting"),
+        ("Show team win percentage in the 2026 season", "team_season_stats"),
+        ("Show head-to-head record for RCB and Gujarat Titans", "head_to_head_stats"),
+        ("Show venue stats and average score in 2026", "venue_stats"),
+    ],
+)
+def test_analytics_intents_route_to_derived_views(
+    question: str, expected_table: str
+) -> None:
+    from app.integrations.ipl_api import IplApiClient
+    from app.llm.question_clarifier import IplQuestionClarifier
+
+    interpreted = IplQuestionClarifier().clarify(question).interpreted_question
+    selected = SchemaSelector().select(interpreted, SchemaService().get_catalog())
+
+    assert [table.name for table in selected] == [expected_table]
+    assert expected_table in IplApiClient.ALLOWED_RESOURCES
 
 
 def test_generate_sql_rejects_short_question() -> None:

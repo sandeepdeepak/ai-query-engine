@@ -20,6 +20,12 @@ def test_schema_catalog_contains_verified_resources() -> None:
     assert {table["name"] for table in payload["tables"]} == {
         "matches",
         "batting_stats",
+        "bowling_stats",
+        "player_match_batting",
+        "player_match_bowling",
+        "team_season_stats",
+        "head_to_head_stats",
+        "venue_stats",
         "players",
         "deliveries",
         "innings",
@@ -45,7 +51,7 @@ def test_schema_service_returns_defensive_cached_copy() -> None:
     first.tables.clear()
     second = service.get_catalog()
 
-    assert len(second.tables) == 6
+    assert len(second.tables) == 12
     assert first.generated_at == second.generated_at
 
 

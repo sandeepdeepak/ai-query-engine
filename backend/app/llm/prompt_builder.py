@@ -50,6 +50,13 @@ Rules:
 - Treat run scorer, leading scorer, top scorer, and top batter as player-level batting
   statistics. Use batting_stats and its runs column; never use innings.runs for those intents.
 - innings.runs is a team innings total, not an individual batter's runs.
+- Use bowling_stats for season/team bowler wicket and economy rankings.
+- Use player_match_batting for highest individual scores and match-level batting figures.
+- Use player_match_bowling for best bowling figures in one match.
+- Use team_season_stats for team wins, losses, standings, and win percentage.
+- Use head_to_head_stats for records between two teams. Team columns are alphabetically
+  canonicalized as team1_name and team2_name; filter both columns accordingly.
+- Use venue_stats for venue scoring averages and chasing-versus-batting-first outcomes.
 
 Verified schema:
 {schema_context}

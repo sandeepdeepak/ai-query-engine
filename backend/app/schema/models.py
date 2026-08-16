@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 class ColumnMetadata(BaseModel):
     name: str
-    data_type: Literal["text", "integer", "boolean", "date", "time", "timestamp"]
+    data_type: Literal["text", "integer", "numeric", "boolean", "date", "time", "timestamp"]
     nullable: bool
     description: str
 
