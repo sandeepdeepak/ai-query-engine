@@ -63,6 +63,7 @@ grant usage on schema api_private to api_query_engine;
 grant select, insert, update on api_private.api_clients to api_query_engine;
 grant select, insert, update on api_private.api_rate_windows to api_query_engine;
 grant insert on api_private.api_usage to api_query_engine;
+grant select (request_id) on api_private.api_usage to api_query_engine;
 grant usage, select on sequence api_private.api_usage_id_seq to api_query_engine;
 
 do $$
@@ -95,6 +96,16 @@ begin
     ) then
         create policy api_usage_backend_insert on api_private.api_usage
             for insert to api_query_engine with check (true);
+    end if;
+
+    if not exists (
+        select 1 from pg_policies
+        where schemaname = 'api_private'
+          and tablename = 'api_usage'
+          and policyname = 'api_usage_backend_conflict_check'
+    ) then
+        create policy api_usage_backend_conflict_check on api_private.api_usage
+            for select to api_query_engine using (true);
     end if;
 end
 $$;
