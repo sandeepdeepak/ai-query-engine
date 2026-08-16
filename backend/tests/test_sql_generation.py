@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api.routes.sql import get_configured_sql_generator
-from app.llm.models import SqlGeneration
+from app.llm.models import QuestionClarification, SqlGeneration
 from app.llm.schema_selector import SchemaSelector
 from app.main import app
 from app.schema.service import SchemaService
@@ -166,6 +166,57 @@ def test_most_wickets_in_a_match_overrides_season_total_intent() -> None:
     assert clarification.scope == "single_match"
     assert clarification.result_limit == 1
     assert [table.name for table in selected] == ["player_match_bowling"]
+
+
+class RewordedSeasonWicketGenerator(FakeSqlGenerator):
+    async def clarify(
+        self, *, question: str, domain_hint: str
+    ) -> QuestionClarification:
+        assert "season-level total wickets" in domain_hint
+        return QuestionClarification(
+            original_question=question,
+            interpreted_question=(
+                "Which IPL bowler took the most bowler-credited wickets during the "
+                "2026 IPL season?"
+            ),
+            entity="bowler",
+            metric="bowler-credited wickets",
+            scope="2026 season",
+            ranking="wickets descending",
+            result_limit=1,
+        )
+
+    async def generate(self, *, system_prompt: str, question: str) -> SqlGeneration:
+        assert "TABLE bowling_stats" in system_prompt
+        assert "TABLE deliveries" not in system_prompt
+        return SqlGeneration(
+            sql=(
+                "SELECT bowler_name, wickets FROM bowling_stats "
+                "WHERE season_year = 2026 ORDER BY wickets DESC LIMIT 1"
+            ),
+            explanation="Returns the 2026 season wicket leader.",
+            tables_used=["bowling_stats"],
+            assumptions=[],
+            confidence=1,
+        )
+
+
+def test_deterministic_guardrail_controls_schema_after_ai_rewording() -> None:
+    app.dependency_overrides[get_configured_sql_generator] = lambda: (
+        RewordedSeasonWicketGenerator()
+    )
+    try:
+        response = TestClient(app).post(
+            "/api/v1/sql/generate",
+            json={"question": "Who took most wickets in 2026"},
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["selected_tables"] == ["bowling_stats"]
+    assert "ORDER BY wickets DESC LIMIT 1" in payload["generation"]["sql"]
 
 
 def test_generate_sql_rejects_short_question() -> None:

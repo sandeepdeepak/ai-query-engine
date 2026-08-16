@@ -51,6 +51,9 @@ Rules:
   statistics. Use batting_stats and its runs column; never use innings.runs for those intents.
 - innings.runs is a team innings total, not an individual batter's runs.
 - Use bowling_stats for season/team bowler wicket and economy rankings.
+- "Who took the most wickets" with a season and no explicit match scope means the single
+  season wicket leader: use bowling_stats, filter season_year, ORDER BY wickets DESC, and
+  return LIMIT 1. Do not calculate it from deliveries.
 - Purple Cap means the single season wicket leader from bowling_stats. Order by wickets
   descending and return LIMIT 1. Orange Cap means the single season run leader from
   batting_stats; order by runs descending and return LIMIT 1.

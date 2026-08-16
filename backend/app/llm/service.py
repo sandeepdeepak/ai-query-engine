@@ -23,16 +23,20 @@ class SqlGenerationService:
         self._clarifier = clarifier or IplQuestionClarifier()
 
     async def generate(self, question: str) -> GenerateSqlResponse:
-        clarification = self._clarifier.clarify(question)
+        guardrail = self._clarifier.clarify(question)
+        clarification = guardrail
         analyze = getattr(self._generator, "clarify", None)
         if callable(analyze):
             clarification = await analyze(
                 question=question,
-                domain_hint=clarification.interpreted_question,
+                domain_hint=guardrail.interpreted_question,
             )
         interpreted_question = clarification.interpreted_question
         catalog = self._schema_service.get_catalog()
-        tables = self._selector.select(interpreted_question, catalog)
+        selection_context = (
+            f"{interpreted_question}\nIPL guardrail: {guardrail.interpreted_question}"
+        )
+        tables = self._selector.select(selection_context, catalog)
         relationships = self._selector.relationships_for(tables, catalog.relationships)
         system_prompt = self._prompt_builder.build(tables=tables, relationships=relationships)
         generation = await self._generator.generate(
