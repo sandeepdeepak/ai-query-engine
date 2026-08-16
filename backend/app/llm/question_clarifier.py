@@ -22,7 +22,34 @@ class IplQuestionClarifier:
                 canonical = replaced
                 assumptions.append(f"Normalized '{alias}' to '{team}'.")
 
-        if re.search(r"\b(top|highest|leading)\s+(run\s+)?scorers?\b", canonical, re.I):
+        if re.search(r"\bpurple\s+cap\b", canonical, re.I):
+            season = self._season(canonical)
+            interpreted = (
+                "Find the IPL Purple Cap winner: the single bowler with the highest "
+                "season-level total of bowler-credited wickets"
+            )
+            if season:
+                interpreted += f" in the {season} IPL season"
+            interpreted += (
+                ". Return exactly one bowler, ordered by wickets descending, then economy "
+                "ascending as a deterministic tie-breaker."
+            )
+            assumptions.append(
+                "'Purple Cap' means the season's leading bowler by credited wickets."
+            )
+        elif re.search(r"\borange\s+cap\b", canonical, re.I):
+            season = self._season(canonical)
+            interpreted = (
+                "Find the IPL Orange Cap winner: the single batter with the highest "
+                "season-level total of individual batting runs"
+            )
+            if season:
+                interpreted += f" in the {season} IPL season"
+            interpreted += ". Return exactly one batter, ordered by runs descending."
+            assumptions.append(
+                "'Orange Cap' means the season's leading batter by individual runs."
+            )
+        elif re.search(r"\b(top|highest|leading)\s+(run\s+)?scorers?\b", canonical, re.I):
             team = self._team_after_of(canonical)
             season = self._season(canonical)
             interpreted = "Rank IPL batters by their total individual batting runs"

@@ -51,6 +51,9 @@ Rules:
   statistics. Use batting_stats and its runs column; never use innings.runs for those intents.
 - innings.runs is a team innings total, not an individual batter's runs.
 - Use bowling_stats for season/team bowler wicket and economy rankings.
+- Purple Cap means the single season wicket leader from bowling_stats. Order by wickets
+  descending and return LIMIT 1. Orange Cap means the single season run leader from
+  batting_stats; order by runs descending and return LIMIT 1.
 - Use player_match_batting for highest individual scores and match-level batting figures.
 - Use player_match_bowling for best bowling figures in one match.
 - Use team_season_stats for team wins, losses, standings, and win percentage.

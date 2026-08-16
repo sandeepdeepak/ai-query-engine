@@ -98,6 +98,37 @@ def test_analytics_intents_route_to_derived_views(
     assert expected_table in IplApiClient.ALLOWED_RESOURCES
 
 
+@pytest.mark.parametrize(
+    ("question", "expected_table", "expected_phrase"),
+    [
+        (
+            "Who get the purple cap in 2025'",
+            "bowling_stats",
+            "single bowler with the highest season-level total",
+        ),
+        (
+            "Who won the orange cap in 2025?",
+            "batting_stats",
+            "single batter with the highest season-level total",
+        ),
+    ],
+)
+def test_ipl_cap_terms_are_reframed_before_schema_selection(
+    question: str, expected_table: str, expected_phrase: str
+) -> None:
+    from app.llm.question_clarifier import IplQuestionClarifier
+
+    clarification = IplQuestionClarifier().clarify(question)
+    selected = SchemaSelector().select(
+        clarification.interpreted_question, SchemaService().get_catalog()
+    )
+
+    assert expected_phrase in clarification.interpreted_question
+    assert "2025 IPL season" in clarification.interpreted_question
+    assert "Return exactly one" in clarification.interpreted_question
+    assert [table.name for table in selected] == [expected_table]
+
+
 def test_generate_sql_rejects_short_question() -> None:
     response = TestClient(app).post("/api/v1/sql/generate", json={"question": "x"})
     assert response.status_code == 422
