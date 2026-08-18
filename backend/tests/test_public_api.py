@@ -79,6 +79,32 @@ def test_public_query_returns_request_and_rate_metadata(tmp_path: Path) -> None:
     assert response.headers["x-ratelimit-remaining"] == "9"
 
 
+def test_public_schema_requires_key_and_returns_described_catalog(tmp_path: Path) -> None:
+    client, api_key = configured_client(tmp_path)
+    try:
+        missing = client.get("/public/v1/schema")
+        response = client.get(
+            "/public/v1/schema",
+            headers={"X-API-Key": api_key},
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert missing.status_code == 401
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["source"] == "ipl-public-api"
+    assert payload["tables"]
+    assert all(table["description"] for table in payload["tables"])
+    assert all(
+        column["description"]
+        for table in payload["tables"]
+        for column in table["columns"]
+    )
+    assert response.headers["x-ratelimit-limit"] == "10"
+    assert response.headers["x-api-client"]
+
+
 def test_public_query_enforces_per_client_rate_limit(tmp_path: Path) -> None:
     client, api_key = configured_client(tmp_path, rpm=1)
     try:

@@ -34,6 +34,7 @@ docker compose up --build
 - SQL validation: `POST http://localhost:8000/api/v1/sql/validate`
 - Full query workflow: `POST http://localhost:8000/api/v1/query`
 - Protected partner API: `POST http://localhost:8000/public/v1/query`
+- Protected partner schema: `GET http://localhost:8000/public/v1/schema`
 
 Set `AI_PROVIDER=mock` for deterministic local development. To use OpenAI, set
 `AI_PROVIDER=openai` and provide `OPENAI_API_KEY`; the key remains backend-only.
