@@ -35,8 +35,8 @@ Rules:
 - Use exactly one table. Do not use joins, CTEs, subqueries, DISTINCT, GROUP BY, or HAVING.
 - Do not use aggregate, scalar, date, or SQL functions; the public REST executor rejects them.
 - WHERE may use AND with =, !=, >, >=, <, <=, IN, IS NULL, or IS NOT NULL.
-- One OR group of equality comparisons is allowed when the user's concept can appear in
-  alternative columns. In particular, a team playing in a match means
+- One OR group of 2 to 4 literal comparisons is allowed, using =, !=, >, >=, <, or <=.
+  In particular, a team playing in a match means
   (home_team_name = 'Team' OR away_team_name = 'Team'); never assume home or away unless
   the user explicitly says so.
 - Normalize obvious team-name spelling variants to the canonical database display name.

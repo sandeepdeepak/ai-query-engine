@@ -40,10 +40,6 @@ def test_valid_select_builds_bounded_rest_plan(validator_and_catalog) -> None:
         ("SELECT secret FROM matches", "Unknown columns"),
         ("SELECT COUNT(*) FROM matches", "Aggregate functions"),
         ("SELECT * FROM matches JOIN innings USING (match_id)", "Joins are not supported"),
-        (
-            "SELECT * FROM matches WHERE season_year = 2026 OR status != 'completed'",
-            "OR supports equality",
-        ),
         ("SELECT pg_sleep(10) FROM matches", "SQL functions"),
     ],
 )
@@ -86,4 +82,22 @@ def test_team_participation_builds_home_or_away_filter(validator_and_catalog) ->
     assert [(item.column, item.operator, item.value) for item in result.plan.or_filters] == [
         ("home_team_name", "eq", "Royal Challengers Bengaluru"),
         ("away_team_name", "eq", "Royal Challengers Bengaluru"),
+    ]
+
+
+def test_or_group_supports_safe_non_equality_comparisons(validator_and_catalog) -> None:
+    validator, catalog = validator_and_catalog
+    result = validator.validate(
+        "SELECT bowler_name, wickets, economy FROM bowling_stats "
+        "WHERE season_year = 2026 AND (wickets > 20 OR economy < 7) "
+        "ORDER BY wickets DESC LIMIT 10",
+        catalog,
+    )
+
+    assert [(item.column, item.operator, item.value) for item in result.plan.filters] == [
+        ("season_year", "eq", "2026")
+    ]
+    assert [(item.column, item.operator, item.value) for item in result.plan.or_filters] == [
+        ("wickets", "gt", "20"),
+        ("economy", "lt", "7"),
     ]

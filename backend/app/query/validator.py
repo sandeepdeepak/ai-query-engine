@@ -147,8 +147,11 @@ class SqlValidator:
                 if len(alternatives) < 2 or len(alternatives) > 4:
                     raise SqlValidationError("OR requires between 2 and 4 comparisons")
                 or_filters = [self._predicate(item, known_columns) for item in alternatives]
-                if any(item.operator != "eq" for item in or_filters):
-                    raise SqlValidationError("OR supports equality comparisons only")
+                allowed_or_operators = {"eq", "neq", "gt", "gte", "lt", "lte"}
+                if any(item.operator not in allowed_or_operators for item in or_filters):
+                    raise SqlValidationError(
+                        "OR supports literal comparison operators only"
+                    )
             else:
                 filters.append(self._predicate(predicate, known_columns))
         return filters, or_filters
